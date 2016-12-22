@@ -5,6 +5,7 @@ using Raml.Tools.ClientGenerator;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using MuleSoft.RAMLGen;
 
 namespace Raml.Tools.Tests
 {
@@ -53,9 +54,9 @@ namespace Raml.Tools.Tests
         public async Task ShouldBuildTypes_WhenMovies()
         {
             var model = await GetMoviesModel();
-            Assert.IsTrue(model.Objects.Any(o => o.Name == "Movie"));
-            Assert.AreEqual(9, model.Objects.First(o => o.Name == "Movie").Properties.Count);
-            Assert.IsNotNull(model);
+            Assert.IsTrue( model.Objects.Any( o => o.Name == "Movie" ) );
+            Assert.AreEqual( 9, model.Objects.First( o => o.Name == "Movie" ).Properties.Count );
+            Assert.IsNotNull( model );
         }
 
         [Test]

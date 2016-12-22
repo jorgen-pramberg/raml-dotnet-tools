@@ -83,13 +83,11 @@ namespace Raml.Common
         private HttpResponseMessage DownloadFileAndWrite(bool confirmOverrite, Uri uri, string destinationFilePath)
         {
             var downloadTask = Client.GetAsync(uri);
-            downloadTask.WaitWithPumping();
             var result = downloadTask.ConfigureAwait(false).GetAwaiter().GetResult();
             if (!result.IsSuccessStatusCode)
                 return result;
 
             var readTask = result.Content.ReadAsStringAsync();
-            readTask.WaitWithPumping();
             var contents = readTask.ConfigureAwait(false).GetAwaiter().GetResult();
             WriteFile(destinationFilePath, confirmOverrite, contents);
             return result;
@@ -127,7 +125,7 @@ namespace Raml.Common
             }
             catch (Exception ex)
             {
-                
+                System.Diagnostics.Debug.WriteLine($"{ex}");
             }
             ManageIncludedFiles(destinationFolder, includedFiles, path, relativePath, confirmOvewrite, scopeIncludedFiles, rootRamlPath);
         }
@@ -239,7 +237,6 @@ namespace Raml.Common
             {
                 if (downloadFileTasks.ContainsKey(includedFile))
                 {
-                    downloadFileTasks[includedFile].WaitWithPumping();
                     WriteFile(includedFile, confirmOvewrite,
                         downloadFileTasks[includedFile].ConfigureAwait(false).GetAwaiter().GetResult());
                 }

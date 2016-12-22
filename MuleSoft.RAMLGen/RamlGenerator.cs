@@ -19,8 +19,8 @@ namespace MuleSoft.RAMLGen
 
             var ramlDoc = await GetRamlDocument(opts, destinationFolder, targetFileName);
 
-            var generator = new RamlClientGenerator();
-            generator.Generate(ramlDoc, targetFileName, targetNamespace, opts.TemplatesFolder, destinationFolder);
+//            var generator = new RamlClientGenerator();
+//            generator.Generate(ramlDoc, targetFileName, targetNamespace, opts.TemplatesFolder, destinationFolder);
         }
 
         public async Task HandleContract(ServerOptions opts)

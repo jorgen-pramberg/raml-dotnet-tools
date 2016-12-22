@@ -1,7 +1,5 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.IO;
-using System.Reflection;
 using Microsoft.VisualStudio.TextTemplating;
 using Raml.Parser.Expressions;
 using Raml.Tools.ClientGenerator;
@@ -10,49 +8,38 @@ namespace MuleSoft.RAMLGen
 {
     public class RamlClientGenerator
     {
-        private static string ClientT4TemplateName = "RAMLCLient.t4";
-
-        public void Generate(RamlDocument ramlDoc, string targetFileName, string targetNamespace, string templatesFolder,
-            string destinationFolder)
+        public RamlClientGenerator(RamlDocument ramlDoc, string rootNamespace)
         {
-            templatesFolder = string.IsNullOrWhiteSpace(templatesFolder)
-                ? GetTemplateDefaultPath()
-                : templatesFolder;
+            model = new ClientGeneratorService( ramlDoc, "Client", rootNamespace ).BuildModel();
+        }
 
+        private readonly ClientGeneratorModel model;
+        private readonly string rootNamespace;
 
-            var model = new ClientGeneratorService(ramlDoc, targetFileName + "Client", targetNamespace).BuildModel();
-
-            var templateFilePath = Path.Combine(templatesFolder, ClientT4TemplateName);
-            var extensionPath = Path.GetDirectoryName(GetType().Assembly.Location) + Path.DirectorySeparatorChar;
-
-            var host = new CustomCmdLineHost();
+        public void Generate(string targetFilePath, string templateFilePath)
+        {
             var engine = new Engine();
-            host.TemplateFileValue = templateFilePath;
+            var host = new CustomHost();
 
             // Read the T4 from disk into memory
             var templateFileContent = File.ReadAllText(templateFilePath);
-            templateFileContent = templateFileContent.Replace("$(binDir)", extensionPath);
-            templateFileContent = templateFileContent.Replace("$(ramlFile)", targetFileName.Replace("\\", "\\\\"));
-            templateFileContent = templateFileContent.Replace("$(namespace)", targetNamespace);
 
+            host.TemplateFile = templateFilePath;
             host.Session = host.CreateSession();
             host.Session["model"] = model;
+            host.Session["fileName"] = targetFilePath;
+            Environment.SetEnvironmentVariable("HOMEPATH", Directory.GetCurrentDirectory());
 
+            // This output can be used as a communication means as it is not 
+            // saved by default when we run the session in our own host.
             var output = engine.ProcessTemplate(templateFileContent, host);
 
-            foreach (CompilerError error in host.Errors)
+            if (host.Errors.HasErrors)
             {
-                Console.WriteLine(error.ToString());
+                throw new Exception("");
             }
 
-            //var t4Service = new T4Service(ServiceProvider.GlobalProvider);
-            //var res = t4Service.TransformText(templateFilePath, model, extensionPath, opts.Source, targetNamespace);
-            File.WriteAllText(Path.Combine(destinationFolder, targetFileName.Replace(".raml", ".cs")), output, host.FileEncoding);
-        }
-
-        private static string GetTemplateDefaultPath()
-        {
-            return Path.GetDirectoryName(Assembly.GetAssembly(typeof(Program)).Location) + Path.DirectorySeparatorChar + "Templates" + Path.DirectorySeparatorChar + "Client";
+//            File.WriteAllText(targetFilePath, output, host.FileEncoding);
         }
     }
 }

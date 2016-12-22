@@ -13,7 +13,7 @@ namespace MuleSoft.RAMLGen
     //and anything else related to the external environment.
     //-------------------------------------------------------------------------
     [Serializable]
-    public class CustomCmdLineHost : ITextTemplatingEngineHost, ITextTemplatingSessionHost
+    public class CustomCmdLineHost : MarshalByRefObject, ITextTemplatingEngineHost, ITextTemplatingSessionHost
     {
         //the path and file name of the text template that is being processed
         //---------------------------------------------------------------------

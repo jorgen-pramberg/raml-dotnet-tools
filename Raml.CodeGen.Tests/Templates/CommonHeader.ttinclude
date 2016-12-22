@@ -1,0 +1,39 @@
+﻿<#@ assembly name="%HOMEPATH%\RAML.Parser.dll" #>
+<#@ assembly name="%HOMEPATH%\EdgeJs.dll" #>
+<#@ assembly name="%HOMEPATH%\Raml.Tools.dll" #>
+<#@ assembly name="%HOMEPATH%\RAML.Api.Core.dll" #>
+<#@ assembly name="System" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Runtime" #>
+<#@ import namespace="System" #>
+<#@ import namespace="Raml.Parser" #>
+<#@ import namespace="Raml.Common" #>
+<#@ import namespace="Raml.Tools" #>
+<#@ import namespace="Raml.Tools.ClientGenerator" #>
+<#@ import namespace="System.Linq" #>
+<#@ parameter type="Raml.Tools.ClientGenerator.ClientGeneratorModel" name="model" #>
+<#@ parameter type="System.String" name="fileName" #>
+<#@ include file="Templates\MultipleTextHelper.ttinclude"#>
+<# var manager = Manager.Create(Host, GenerationEnvironment); #>
+
+<# manager.StartHeader(); #>
+// Generated from RAML specification.
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using RAML.Api.Core;
+using Raml.Common;
+using <#= model.Namespace #>.Models;
+
+<# manager.EndBlock(); #>

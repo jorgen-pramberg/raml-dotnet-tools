@@ -1,0 +1,113 @@
+<#@ template language="C#" hostspecific="True" #>
+<#@include file="Templates\CommonHeader.ttinclude"#>
+
+<#
+	manager.StartNewFile(String.Format(fileName, model.Root.Name));
+#>
+namespace <#= model.Namespace #>.Models
+{
+    /// <summary>
+    /// <#= model.Root.Description == null ? string.Empty : XmlCommentHelper.Escape(model.Root.Description) #>
+    /// </summary>
+    public partial class <#= model.Root.Name #>
+    {
+
+		public SchemaValidationSettings SchemaValidation { get; private set; } 
+
+        protected readonly HttpClient client;
+        public const string BaseUri = "<#= model.BaseUri #>";
+
+        internal HttpClient Client { get { return client; } }
+
+
+
+<#
+    if (model.Security != null && !string.IsNullOrWhiteSpace(model.Security.AccessTokenUri))
+    {
+#>
+
+        public string OAuthAccessToken { get; set; }
+
+		private string oauthAuthorizeUrl = "<#= model.Security.AuthorizationUri ?? "" #>";
+		public string OAuthAuthorizeUrl { get { return oauthAuthorizeUrl; } set { oauthAuthorizeUrl = value; } }
+
+   		private string oauthAccessTokenUrl = "<#= model.Security.AccessTokenUri #>";
+		public string OAuthAccessTokenUrl { get { return oauthAccessTokenUrl; } set { oauthAccessTokenUrl = value; } }
+<#
+    }
+
+#>
+
+        public <#= model.Root.Name #>(string endpointUrl)
+        {
+            SchemaValidation = new SchemaValidationSettings
+			{
+				Enabled = true,
+				RaiseExceptions = true
+			};
+
+			if(string.IsNullOrWhiteSpace(endpointUrl))
+                throw new ArgumentException("You must specify the endpoint URL", "endpointUrl");
+
+			if (endpointUrl.Contains("{"))
+			{
+				var regex = new Regex(@"\{([^\}]+)\}");
+				var matches = regex.Matches(endpointUrl);
+				var parameters = new List<string>();
+				foreach (Match match in matches)
+				{
+					parameters.Add(match.Groups[1].Value);
+				}
+				throw new InvalidOperationException("Please replace parameter/s " + string.Join(", ", parameters) + " in the URL before passing it to the constructor ");
+			}
+
+            client = new HttpClient {BaseAddress = new Uri(endpointUrl)};
+        }
+
+        public <#= model.Root.Name #>(HttpClient httpClient)
+        {
+            if(httpClient.BaseAddress == null)
+                throw new InvalidOperationException("You must set the BaseAddress property of the HttpClient instance");
+
+            client = httpClient;
+
+			SchemaValidation = new SchemaValidationSettings
+			{
+				Enabled = true,
+				RaiseExceptions = true
+			};
+        }
+
+        
+<#
+	foreach (var property in model.Root.Properties)
+	{
+#>
+        public virtual <#= property.Name #> <#= property.Name #>
+        {
+            get { return new <#= property.Name #>(this); }
+        }
+                
+<#
+	}
+#>
+
+
+		public void AddDefaultRequestHeader(string name, string value)
+		{
+			client.DefaultRequestHeaders.Add(name, value);
+		}
+
+		public void AddDefaultRequestHeader(string name, IEnumerable<string> values)
+		{
+			client.DefaultRequestHeaders.Add(name, values);
+		}
+
+
+    }
+
+}
+<#
+	manager.EndBlock();
+	manager.Process(true);
+#>
